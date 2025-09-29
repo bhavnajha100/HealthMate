@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Medical AI Chatbot</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Bootstrap & Font Awesome -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+    <!-- Inline CSS -->
+    <style>
+        body, html {
+			height: 100%;
+			margin: 0;
+			background: linear-gradient(to bottom right, #f7faff, #e1ecf4);
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		}
+
+        .chat {
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+        .card {
+            height: 90vh;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .card-header {
+            background: linear-gradient(to right, #0062E6, #33AEFF);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            font-weight: 500;
+        }
+        .msg_card_body {
+            overflow-y: auto;
+            height: calc(90vh - 180px);
+            padding: 20px;
+            background-color: #f4f7fa;
+        }
+        .card-footer {
+            background-color: #ffffff;
+            border-radius: 0 0 20px 20px;
+        }
+        .type_msg {
+            background-color: #f1f3f5;
+            border: none;
+            color: #333;
+            height: 60px;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .type_msg:focus {
+            outline: none;
+            box-shadow: 0 0 2px #007bff;
+        }
+        .send_btn {
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 10px;
+            padding: 0 20px;
+            margin-left: 10px;
+            transition: 0.3s;
+        }
+        .send_btn:hover {
+            background: #0056b3;
+        }
+        .user_img, .user_img_msg {
+            height: 45px;
+            width: 45px;
+            border-radius: 50%;
+            border: 2px solid #e0e0e0;
+        }
+        .msg_cotainer, .msg_cotainer_send {
+            border-radius: 25px;
+            padding: 12px 18px;
+            max-width: 75%;
+            position: relative;
+            word-wrap: break-word;
+        }
+        .msg_cotainer {
+            background: #e9f0fb;
+            margin-left: 10px;
+            color: #0d1b2a;
+        }
+        .msg_cotainer_send {
+            background: #d4f3e4;
+            margin-right: 10px;
+            color: #1b4332;
+        }
+        .msg_time, .msg_time_send {
+            font-size: 10px;
+            color: #999;
+            position: absolute;
+            bottom: -15px;
+        }
+        .msg_time { left: 10px; }
+        .msg_time_send { right: 10px; }
+
+        .online_icon {
+            background-color: #4cd137;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            border: 2px solid white;
+        }
+        .img_cont {
+            position: relative;
+            width: 45px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid h-100 d-flex justify-content-center align-items-center">
+        <div class="col-md-8 col-xl-6 chat">
+            <div class="card">
+                <div class="card-header d-flex align-items-center">
+                    <div class="img_cont mr-3">
+                        <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.pngrepo.com%2Fpng%2F109202%2F512%2Fnurse.png&f=1&nofb=1&ipt=315cef445895cbea479218ce0c8bfde757e4ec49390cd813a1e969ea955057ee" class="user_img">
+                        <span class="online_icon"></span>
+                    </div>
+                    <div class="user_info">
+                        <span>MedAssist AI</span>
+                        <p class="mb-0">Your personal medical assistant</p>
+                    </div>
+                </div>
+                <div id="messageFormeight" class="card-body msg_card_body"></div>
+                <div class="card-footer">
+                    <form id="messageArea" class="input-group">
+                        <input type="text" id="text" name="msg" placeholder="Describe your symptoms or ask a question..." autocomplete="off" class="form-control type_msg" required/>
+                        <div class="input-group-append">
+                            <button type="submit" id="send" class="btn send_btn"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        $(document).ready(function() {
+            $("#messageArea").on("submit", function(event) {
+                const date = new Date();
+                const hour = date.getHours();
+                const minute = date.getMinutes();
+                const str_time = hour + ":" + (minute < 10 ? "0" : "") + minute;
+                var rawText = $("#text").val();
+
+                var userHtml = '<div class="d-flex justify-content-end mb-3">' +
+                                '<div class="msg_cotainer_send">' + rawText +
+                                '<span class="msg_time_send">' + str_time + '</span></div>' +
+                                '<div class="img_cont_msg ml-2"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="user_img_msg"></div></div>';
+                
+                $("#text").val("");
+                $("#messageFormeight").append(userHtml);
+
+                $.ajax({
+                    data: { msg: rawText },
+                    type: "POST",
+                    url: window.location.pathname.replace(/\/$/, '') + "/get",
+                }).done(function(data) {
+                    var botHtml = '<div class="d-flex justify-content-start mb-3">' +
+                                  '<div class="img_cont_msg mr-2"><img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.pngrepo.com%2Fpng%2F109202%2F512%2Fnurse.png&f=1&nofb=1&ipt=315cef445895cbea479218ce0c8bfde757e4ec49390cd813a1e969ea955057ee" class="user_img_msg"></div>' +
+                                  '<div class="msg_cotainer">' + data +
+                                  '<span class="msg_time">' + str_time + '</span></div></div>';
+                    $("#messageFormeight").append($.parseHTML(botHtml));
+                });
+                event.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>
